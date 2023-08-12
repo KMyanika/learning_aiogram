@@ -17,6 +17,21 @@ class ForUsers():
         return text
 
 
+    @staticmethod
+    def push_button_contacts(self):
+        text = f'*Мои контакты*\n\n' \
+               f'Мой телеграмм: @yanikam22\n' \
+               f'GitHub: [Мой профиль](https://github.com/KMyanika)\n' \
+               f'GitHub username: `KMyanika`'
+        return text
+
+    @staticmethod
+    def push_command_getmyid(self):
+        text = f"Ваш ID: `{self.chat.id}`"
+        return text
+
+
+
 class ForAdmin():
 
     def __init__(self, message):
@@ -28,4 +43,11 @@ class ForAdmin():
                f'ID: `{self.chat.id}`\n' \
                f'[Написать сообщение](tg://user?id={self.chat.id})\n\n' \
                f'Сообщение: {user_text}'
+        return text
+
+    @staticmethod
+    def push_command_start(self):
+        text = f'#newuser: @{self.from_user.username}\n' \
+               f'ID: `{self.chat.id}`\n' \
+               f'[Написать сообщение](tg://user?id={self.chat.id})'
         return text
