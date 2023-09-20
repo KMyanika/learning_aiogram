@@ -21,20 +21,27 @@ handlers_help_command = {}
 @dp.message_handler(commands=["start"])
 async def command_start(message: types.Message):
     if message.chat.id == admin:
-        await message.answer(text="Привет, админ")
+        await message.answer(text=ForAdmin.push_command_start(),
+                             reply_markup=kb_command_start_menu())
     else:
-        await message.answer(text=f"Привет, {message.from_user.username}",
+        await message.answer(text=ForUsers.push_command_start(message),
                              reply_markup=kb_command_start_menu())
         await bot.send_message(chat_id=admin,
-                               text=ForAdmin.push_command_start(message),     #todo спрятать текстовые сообщения в text_handlers
+                               text=ForAdmin.push_if_use_command_start(message),
                                parse_mode=pm)
 
 
-@dp.message_handler(commands=["getmyid"])  #todo на следующий урок попробовать добавить кнопку переслать сообщение
+@dp.message_handler(commands=['homework'])
+async def command_homework(message: types.Message):
+    await message.answer(text='Выберите нужную кнопку',
+                         reply_markup=ikb_homework())
+
+
+@dp.message_handler(commands=["getmyid"])
 async def command_getmyid(message: types.Message):
     await message.answer(text=ForUsers.push_command_getmyid(message),
                          parse_mode=pm,
-                         reply_markup=ikb_forvard_id(ForUsers.push_command_getmyid(message)))
+                         reply_markup=ikb_forward_id(ForUsers.push_command_getmyid(message)))
 
 
 @dp.message_handler(commands=["help"])
@@ -56,7 +63,8 @@ async def messages_handlers(message: types.Message):
                                phone_number=79044920200,
                                first_name='Янина',
                                last_name='Кавшевич-Матусевич',
-                               protect_content=True)
+                               protect_content=True,
+                               reply_markup=ikb_Kontakts())
 
     elif any(x in get_message_bot for x in ('#help', 'help', 'помощь')):
         await bot.send_message(chat_id=admin,
@@ -71,6 +79,27 @@ async def messages_handlers(message: types.Message):
                                    text=ForAdmin.push_help_handlers(message, message.text),
                                    parse_mode=pm)
             await message.answer(text=ForUsers.push_help_handlers(message))
+
+
+@dp.callback_query_handler()
+async def callback_handlers(call: types.callback_query):
+    if call.data == 'ege':
+        await call.message.answer(text='Получите домашку', reply_markup=ikb_ege_homework())
+    elif 'ege' in call.data:
+        num = int(call.data[3:])
+        await call.message.answer(text=ForUsers.push_homework_ege(call.message, num),
+                                  parse_mode=pm,
+                                  disable_web_page_preview=True)
+    elif call.data == 'python':
+        await call.message.answer(text='Получите домашку', reply_markup=ikb_python_homework())
+    elif 'python' in call.data:
+        num = int(call.data[6:])
+        await call.message.answer(text=ForUsers.push_homework_python(call.message, num),
+                                  parse_mode=pm,
+                                  disable_web_page_preview=True)
+
+    elif call.data == 'homework':
+        pass
 
 
 
