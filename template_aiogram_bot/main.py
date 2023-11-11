@@ -11,12 +11,13 @@ from keyboard_handlers import *
 dotenv.load_dotenv()
 token = os.getenv("API_TOKEN")
 admin = int(os.getenv("ADMIN"))
+hw = int(os.getenv("HOMEWORK"))
 
 bot = Bot(token)
 dp = Dispatcher(bot)
 pm = 'Markdown'
 handlers_help_command = {}
-
+actions = {}
 
 @dp.message_handler(commands=["start"])
 async def command_start(message: types.Message):
@@ -71,14 +72,27 @@ async def messages_handlers(message: types.Message):
                                text=ForAdmin.push_help_handlers(message, message.text),
                                parse_mode=pm)
         await message.answer(text=ForUsers.push_help_handlers(message))
+    elif get_message_bot == 'отменить':
+        await message.answer(text='Команда успешно отменена',
+                             reply_markup=kb_command_start_menu())
+    elif get_message_bot == 'отправить домашку':
+        await message.answer(text=ForUsers.push_take_homework(message))
+        actions[message.chat.id] = 'take_home'
 
     else:
-        if handlers_help_command[message.chat.id] == 'H':
+        if handlers_help_command.get(message.chat.id) == 'H':
             handlers_help_command[message.chat.id] = ''
             await bot.send_message(chat_id=admin,
                                    text=ForAdmin.push_help_handlers(message, message.text),
                                    parse_mode=pm)
             await message.answer(text=ForUsers.push_help_handlers(message))
+
+        elif actions.get(message.chat.id) == 'take_home':
+            await message.answer(text=ForUsers.push_succesful_take_homework(message))
+            await bot.send_message(chat_id=hw,
+                                    text=ForAdmin.push_student_send_homework(message,
+                                                                            message.from_user.first_name,
+                                                                            message.text))
 
 
 @dp.callback_query_handler()
@@ -90,6 +104,10 @@ async def callback_handlers(call: types.callback_query):
         await call.message.answer(text=ForUsers.push_homework_ege(call.message, num),
                                   parse_mode=pm,
                                   disable_web_page_preview=True)
+        await bot.send_message(chat_id=hw,
+                               text=ForAdmin.push_student_take_homework_ege(call.message, call.message.from_user.first_name, num),
+                               parse_mode=pm,
+                               disable_web_page_preview=True)
     elif call.data == 'python':
         await call.message.answer(text='Получите домашку', reply_markup=ikb_python_homework())
     elif 'python' in call.data:
@@ -97,9 +115,16 @@ async def callback_handlers(call: types.callback_query):
         await call.message.answer(text=ForUsers.push_homework_python(call.message, num),
                                   parse_mode=pm,
                                   disable_web_page_preview=True)
+        await bot.send_message(chat_id=hw,
+                               text=ForAdmin.push_student_take_homework_python(call.message, call.message.from_user.first_name, num),
+                               parse_mode=pm,
+                               disable_web_page_preview=True)
+        #todo пофиксить штуку с именами, брать имена из базы данных
 
     elif call.data == 'homework':
-        pass
+        await call.message.answer(text=ForUsers.push_take_homework(call.message),
+                                  reply_markup=kb_cancel())
+        actions[call.message.chat.id] = 'take_home'
 
 
 
